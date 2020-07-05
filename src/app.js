@@ -1,4 +1,5 @@
 const express = require("express");
+const { uuid, isUuid }= require ('uuidv4');
 const cors = require("cors");
 
 // const { uuid } = require("uuidv4");
@@ -11,23 +12,73 @@ app.use(cors());
 const repositories = [];
 
 app.get("/repositories", (request, response) => {
-  // TODO
-});
 
-app.post("/repositories", (request, response) => {
-  // TODO
+  return response.json(repositories);
 });
 
 app.put("/repositories/:id", (request, response) => {
-  // TODO
+  const { id } = request.params;
+  const { url, title, techs} = request.body;
+
+  const repositoryIndex = repositories.findIndex(repository => repository.id === id);
+
+  if(repositoryIndex < 0){
+    return response.status(400).json({error: 'Repository not foun'});
+  }
+
+  const likes = repositories[repositoryIndex].likes;
+
+  const repository = {
+    id,
+    title,
+    url,
+    techs,
+    likes
+  }
+
+  repositories[repositoryIndex] = repository;
+
+  return response.json(repository);
 });
 
 app.delete("/repositories/:id", (request, response) => {
-  // TODO
+  const { id } = request.params;
+
+  const repositoryIndex = repositories.findIndex(repository => repository.id === id);
+
+  if(repositoryIndex < 0){
+    return response.status(400).json({error: 'Repository not foun'});
+  }
+
+  repositories.splice(repositoryIndex,1);
+
+  return response.status(204).send();
+
 });
 
+app.post("/repositories", (request, response) => {
+  
+    const { title, url, techs} = request.body;
+    const likes = 0;
+    const repository = {id: uuid(), title, url, techs, likes};
+  
+    repositories.push(repository);
+  
+    return response.json(repository);
+  });
+
 app.post("/repositories/:id/like", (request, response) => {
-  // TODO
+  const { id } = request.params;
+  const repositoryIndex = repositories.findIndex(repository => repository.id === id);
+
+  if(repositoryIndex < 0){
+    return response.status(400).json({error: 'Repository not found'});
+  }
+
+  repositories[repositoryIndex].likes += 1;
+
+  return response.json(repositories[repositoryIndex]);
+  
 });
 
 module.exports = app;
